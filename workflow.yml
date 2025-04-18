@@ -1,0 +1,72 @@
+name: Build Image
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-and-push:
+    name: Build and Push Docker Images
+    runs-on: ubuntu-latest
+
+    steps:
+    # Checkout the repository
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    # Log in to Docker Hub
+    - name: Log in to Docker Hub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.uzair1212 }}
+        password: ${{ secrets.ch1234567 }}
+
+    # Build and push Docker images for each microservice
+    - name: Build and push API Gateway image
+      run: |
+        docker build -t ${{ secrets.uzair1212}}/api-gateway:latest ./Cafe_Management_System/api-gateway
+        docker push ${{ secrets.uzair1212 }}/api-gateway:latest
+
+    - name: Build and push Menu Service image
+      run: |
+        docker build -t ${{ secrets.uzair1212 }}/menu-service:latest ./Cafe_Management_System/menu-services
+        docker push ${{ secrets.uzair1212 }}/menu-service:latest
+
+    - name: Build and push Order Service image
+      run: |
+        docker build -t ${{ secrets.uzair1212 }}/order-service:latest ./Cafe_Management_System/order-services
+        docker push ${{ secrets.uzair1212 }}/order-service:latest
+
+    - name: Build and push Payment Service image
+      run: |
+        docker build -t ${{ secrets.uzair1212 }}/payment-service:latest ./Cafe_Management_System/payment-services
+        docker push ${{ secrets.uzair1212 }}/payment-service:latest
+
+    - name: Build and push Inventory Service image
+      run: |
+        docker build -t ${{ secrets.uzair1212 }}/inventory-service:latest ./Cafe_Management_System/inventory-services
+        docker push ${{ secrets.uzair1212 }}/inventory-service:latest
+
+    - name: Build and push Customer Service image
+      run: |
+        docker build -t ${{ secrets.uzair1212  }}/customer-service:latest ./Cafe_Management_System/customer-services
+        docker push ${{ secrets.uzair1212 }}/customer-service:latest
+
+  deploy:
+    name: Deploy Services
+    runs-on: ubuntu-latest
+    needs: build-and-push
+
+    steps:
+    # Checkout the repository
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    # Deploy using Docker Compose
+    - name: Deploy with Docker Compose
+      run: |
+        docker-compose -f ./Cafe_Management_System/compose.yaml up -d
